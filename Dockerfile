@@ -18,6 +18,9 @@ RUN unzip -qq /app/instantclient-basic-linux.x64-11.2.0.4.0.zip -d /usr/local/li
 RUN unzip -qq /app/instantclient-sdk-linux.x64-11.2.0.4.0.zip -d /usr/local/lib
 RUN ln -s /usr/local/lib/instantclient_11_2/libclntsh.so.11.1 /usr/local/lib/instantclient_11_2/libclntsh.so
 
+# Clean up packages
+RUN rm /app/instantclient-basic-linux.x64-11.2.0.4.0.zip /app/instantclient-sdk-linux.x64-11.2.0.4.0.zip
+
 ENV ORACLE_HOME /usr/local/lib/instantclient_11_2
 ENV LD_LIBRARY_PATH /usr/local/lib/instantclient_11_2
 
