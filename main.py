@@ -171,8 +171,6 @@ def generate_fields(inspector, dirname, model, version, table):
                 table,
                 field['name'],
                 '',
-                '',
-                '',
             ])
 
     fn = os.path.join(dirname, 'schema.csv')
