@@ -10,10 +10,28 @@ Run the script to output the usage information.
 docker run -it --rm dbhi/data-models-generator
 ```
 
-## Example
+## Examples
 
-The minimum arguments are model, version, engine, database.
+### SQL
+
+The minimum arguments are model, version, engine, and database.
 
 ```
-docker run -it --rm dbhi/data-models-generator omop v4 postgresql omop_v4_db
+docker run -it --rm dbhi/data-models-generator sql omop v4 postgresql omop_v4_db
+```
+
+### REDCap
+
+The minimum arguments are model, version, and a path or URL and token.
+
+CSV data dictionary.
+
+```
+docker run -it --rm dbhi/data-models-generator redcap myproject /path/to/data_dictionary.csv
+```
+
+REDCap API with URL and token.
+
+```
+docker run -it --rm dbhi/data-models-generator redcap myproject https://example.com/api/ ABC123
 ```
