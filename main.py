@@ -2,13 +2,19 @@
 
 import os
 import csv
-import json
 import shutil
 from getpass import getpass
 from multiprocessing.pool import ThreadPool
 from sqlalchemy import inspect, create_engine, types
 from sqlalchemy.engine.url import URL
 
+model_columns = (
+    'model',
+    'version',
+    'label',
+    'url',
+    'description',
+)
 
 table_columns = (
     'model',
@@ -96,11 +102,12 @@ def map_field_attrs(col):
 
 
 def create(engine, model, version, root):
-    with open(os.path.join(root, 'datamodel.json'), 'w') as f:
-        json.dump({
-            'name': model,
-            'version': version,
-        }, f)
+    with open(os.path.join(root, 'models.csv'), 'w') as f:
+        w = csv.writer(f)
+        w.writerows([
+            model_columns,
+            (model, version, '', '', ''),
+        ])
 
     inspector = inspect(engine)
 
