@@ -28,8 +28,6 @@ field_columns = (
     'version',
     'table',
     'field',
-    'ref_table',
-    'ref_field',
     'description',
 )
 
