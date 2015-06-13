@@ -11,6 +11,9 @@ from sqlalchemy.sql import text
 from sqlalchemy.engine.url import URL
 from constants import MODEL_COLUMNS, TABLE_COLUMNS, FIELD_COLUMNS, \
     SCHEMA_COLUMNS
+import _redcap
+
+_redcap.patch()
 
 
 # Standard set of fields for REDCap metadata.
@@ -227,22 +230,6 @@ def generate_table_files(dirname, model, version, table, data):
         w.writerows(data['schemata'])
 
 
-def _patch_redcap():
-    """
-    Patches _call_api to bypass https://github.com/sburns/PyCap/issues/54
-    since it is not relevant in this context.
-    """
-    __call_api = Project._call_api
-
-    def _call_api(self, payload, typpe, **kwargs):
-        if typpe == 'exp_event':
-            return [{'error': 'monkey patched'}]
-
-        return __call_api(self, payload, typpe, **kwargs)
-
-    Project._call_api = _call_api
-
-
 def main(argv=None):
     usage = """REDCap Data Model Generator
 
@@ -289,8 +276,6 @@ def main(argv=None):
             fields = list(r)
 
     elif args['api']:
-        _patch_redcap()
-
         project = Project(args['<url>'], args['<token>'])
         fields = project.export_metadata(format='json')
 
