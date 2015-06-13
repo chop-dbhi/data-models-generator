@@ -97,8 +97,12 @@ def parse_choices(s):
         return
 
     # Split by pipe, then by the first comma.
-    for t in s.split(' | '):
+    for t in s.split('|'):
         c = t.split(',', 1)
+
+        # Could not parse, assume it is a calculation intead.
+        if len(c) < 2:
+            return
 
         choices.append(c[1].strip())
 
