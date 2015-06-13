@@ -3,14 +3,18 @@
 import os
 import csv
 import shutil
+from getpass import getpass
 from multiprocessing.pool import ThreadPool
 from redcap import Project
+from sqlalchemy import create_engine
+from sqlalchemy.sql import text
+from sqlalchemy.engine.url import URL
 from constants import MODEL_COLUMNS, TABLE_COLUMNS, FIELD_COLUMNS, \
     SCHEMA_COLUMNS
 
 
-# Use same field names as returned by the API.
-csv_header = (
+# Standard set of fields for REDCap metadata.
+redcap_fields = (
     'field_name',
     'form_name',
     'section_header',
@@ -29,6 +33,50 @@ csv_header = (
     'matrix_group_name',
     'matrix_ranking',
 )
+
+
+def db_connect(database, host, port, user, password):
+    # Construct engine URL
+    url = URL('mysql+pymysql',
+              username=user,
+              password=password,
+              host=host,
+              port=port,
+              database=database)
+
+    return create_engine(url)
+
+
+def db_metadata(conn, project):
+    "Returns records from a REDCap database."
+
+    sql = text('''
+        SELECT
+            field_name,
+            form_name,
+            element_preceding_header as section_header,
+            element_type as field_type,
+            element_label as field_label,
+            element_enum as choices_calc_slider,
+            element_note as field_note,
+            element_validation_type as validation_type,
+            element_validation_min as validation_min,
+            element_validation_max as validation_max,
+            field_phi as identifier,
+            branching_logic,
+            field_req as required,
+            custom_alignment,
+            question_num as question_number,
+            grid_name as matrix_group_name
+        FROM redcap_metadata JOIN redcap_projects
+            ON (redcap_metadata.project_id = redcap_projects.project_id)
+        WHERE redcap_projects.project_name = :project
+        ORDER BY field_order
+    ''')
+
+    query = conn.execute(sql, project=project)
+
+    return [dict(zip(redcap_fields, row)) for row in query]
 
 
 def get_field_type(field):
@@ -195,11 +243,19 @@ def _patch_redcap():
 def main(argv=None):
     usage = """REDCap Data Model Generator
 
-    Usage: redcap <model> <version> (<path> | <url> <token>) [--dir=DIR]
+    Usage:
+        redcap csv  <model> <version> <path>        [--dir=DIR]
+        redcap api  <model> <version> <url> <token> [--dir=DIR]
+        redcap db   <model> <version> <project>     [--dir=DIR] [--db=DB] [--host=HOST] [--port=PORT] [--user=USER] [--pass=PASS]
 
     Options:
         -h --help       Show this screen.
         --dir=DIR       Name of the directory to output the files.
+        --db=DB         Name of the REDCap database [default: redcap].
+        --host=HOST     Host of the database server [default: localhost].
+        --port=PORT     Port of the database server [default: 3306].
+        --user=USER     Username to connect with.
+        --pass=PASS     Password to connect with. If set to *, a prompt will be provided.
 
     """  # noqa
 
@@ -222,17 +278,30 @@ def main(argv=None):
     os.makedirs(rootdir)
 
     # File path
-    if args['<path>']:
+    if args['csv']:
         with open(args['<path>'], 'rU') as f:
             # Skip header
             next(f)
-            r = csv.DictReader(f, fieldnames=csv_header)
+            r = csv.DictReader(f, fieldnames=redcap_fields)
             fields = list(r)
-    else:
+
+    elif args['api']:
         _patch_redcap()
 
         project = Project(args['<url>'], args['<token>'])
         fields = project.export_metadata(format='json')
+
+    elif args['db']:
+        if args['--pass'] == '*':
+            args['--pass'] = getpass('password: ')
+
+        conn = db_connect(args['--db'],
+                          args['--host'],
+                          args['--port'],
+                          args['--user'],
+                          args['--pass'])
+
+        fields = db_metadata(conn, args['<project>'])
 
     generate(fields, args['<model>'], args['<version>'], args['--dir'])
 

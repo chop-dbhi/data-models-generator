@@ -6,7 +6,7 @@
 
 Run the script to output the usage information.
 
-```
+```bash
 docker run -it --rm dbhi/data-models-generator
 ```
 
@@ -16,22 +16,32 @@ docker run -it --rm dbhi/data-models-generator
 
 The minimum arguments are model, version, engine, and database.
 
-```
+```bash
 docker run -it --rm dbhi/data-models-generator sql omop v4 postgresql omop_v4_db
 ```
 
 ### REDCap
 
-The minimum arguments are model, version, and a path or URL and token.
+To see the usage, run:
 
-CSV data dictionary.
-
-```
-docker run -it --rm dbhi/data-models-generator redcap myproject /path/to/data_dictionary.csv
+```bash
+docker run -it --rm dbhi/data-models-generator redcap help
 ```
 
-REDCap API with URL and token.
+REDCap data dictionary.
 
+```bash
+docker run -it --rm dbhi/data-models-generator redcap csv myproject v1 /path/to/data_dictionary.csv
 ```
-docker run -it --rm dbhi/data-models-generator redcap myproject https://example.com/api/ ABC123
+
+REDCap API.
+
+```bash
+docker run -it --rm dbhi/data-models-generator redcap api myproject v1 https://example.com/api/ ABC123
+```
+
+REDCap database.
+
+```bash
+docker run -it --rm dbhi/data-models-generator redcap db myproject v1 myproject --host=example.com
 ```
