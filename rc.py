@@ -4,7 +4,7 @@ import os
 import csv
 import shutil
 from getpass import getpass
-from multiprocessing.pool import ThreadPool
+from concurrent.futures import ThreadPoolExecutor
 from redcap import Project
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
@@ -179,14 +179,13 @@ def generate(rc_fields, model, version, root):
     # Tables file.
     generate_tables(root, model, version, tables.keys())
 
-    pool = ThreadPool()
+    workers = os.cpu_count()
+    pool = ThreadPoolExecutor(max_workers=workers)
 
     for table, data in tables.items():
-        args = (root, model, version, table, data)
-        pool.apply_async(generate_table_files, args=args)
+        pool.submit(generate_table_files, root, model, version, table, data)
 
-    pool.close()
-    pool.join()
+    pool.shutdown()
 
 
 def generate_tables(dirname, model, version, tables):
