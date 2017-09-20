@@ -269,7 +269,7 @@ def main(argv=None):
 
     # File path
     if args['csv']:
-        with open(args['<path>'], 'rU') as f:
+        with open(args['<path>'], encoding='latin-1') as f:
             # Skip header
             next(f)
             r = csv.DictReader(f, fieldnames=redcap_fields)
