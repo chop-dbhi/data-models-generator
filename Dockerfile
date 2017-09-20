@@ -6,13 +6,7 @@ MAINTAINER Byron Ruth <b@devel.io>
 ADD . /app
 WORKDIR /app
 
-RUN apt-get -qq update
-
-# PostgreSQL
-RUN apt-get install libpq-dev
-
-# Oracle
-RUN apt-get -qq install unzip libaio1
+RUN apt-get -qq update && apt-get -qq install libpq-dev unzip libaio1
 
 RUN unzip -qq /app/instantclient-basic-linux.x64-11.2.0.4.0.zip -d /usr/local/lib
 RUN unzip -qq /app/instantclient-sdk-linux.x64-11.2.0.4.0.zip -d /usr/local/lib
