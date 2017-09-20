@@ -8,11 +8,10 @@ import rc
 def main():
     usage = """Data Models Generator
 
-    Usage: main.py (sql | redcap) <args>...
+    Usage: main.py (sql | redcap) [--dir=DIR] <args>...
 
     Options:
         -h --help       Show this screen.
-
         --dir=DIR       Name of the directory to output the files.
 
     """  # noqa
